@@ -1,0 +1,111 @@
+section .data
+    sequence db '1','2','3','4','5'     ; stored sequence
+    seq_len equ 5
+
+    msg_show db "Memorize: ", 10
+    msg_show_len equ $ - msg_show
+
+    msg_input db 10, "Enter the sequence: "
+    msg_input_len equ $ - msg_input
+
+    msg_result db 10, "Correct digits: "
+    msg_result_len equ $ - msg_result
+
+    newline db 10
+
+section .bss
+    input resb 5        ; user input
+    score resb 1        ; score
+
+section .text
+    global _start
+
+_start:
+
+    ; print "Memorize:"
+    mov rax, 1
+    mov rdi, 1
+    mov rsi, msg_show
+    mov rdx, msg_show_len
+    syscall
+
+    ; print sequence
+    mov rcx, seq_len
+    mov rsi, sequence
+
+print_seq:
+    mov rax, 1
+    mov rdi, 1
+    mov rdx, 1
+    syscall
+    inc rsi
+    loop print_seq
+
+    ; delay loop (simple)
+    mov rcx, 500000000
+delay:
+    loop delay
+
+    ; print input prompt
+    mov rax, 1
+    mov rdi, 1
+    mov rsi, msg_input
+    mov rdx, msg_input_len
+    syscall
+
+    ; read user input
+    mov rax, 0
+    mov rdi, 0
+    mov rsi, input
+    mov rdx, seq_len
+    syscall
+
+    ; compare input with sequence
+    mov rcx, seq_len
+    mov rsi, sequence
+    mov rdi, input
+    mov byte [score], 0
+
+compare_loop:
+    mov al, [rsi]
+    mov bl, [rdi]
+    cmp al, bl
+    jne skip_inc
+
+    inc byte [score]
+
+skip_inc:
+    inc rsi
+    inc rdi
+    loop compare_loop
+
+    ; print result message
+    mov rax, 1
+    mov rdi, 1
+    mov rsi, msg_result
+    mov rdx, msg_result_len
+    syscall
+
+    ; convert score to ASCII
+    mov al, [score]
+    add al, '0'
+    mov [score], al
+
+    ; print score
+    mov rax, 1
+    mov rdi, 1
+    mov rsi, score
+    mov rdx, 1
+    syscall
+
+    ; newline
+    mov rax, 1
+    mov rdi, 1
+    mov rsi, newline
+    mov rdx, 1
+    syscall
+
+    ; exit
+    mov rax, 60
+    xor rdi, rdi
+    syscall
