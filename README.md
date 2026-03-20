@@ -1,2 +1,2 @@
-# pisti
+# mini system
 pl
